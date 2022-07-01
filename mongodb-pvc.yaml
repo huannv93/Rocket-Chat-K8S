@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-claim0
+spec:
+  resources:
+    requests:
+      storage: 100Mi # request 10Gi storage
+  accessModes:
+    - ReadWriteOnce # only allow one node can be read and write
+  storageClassName: ""
+

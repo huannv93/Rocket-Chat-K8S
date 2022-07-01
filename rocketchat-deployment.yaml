@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.0 (40646f47)
+    traefik.backend: rocketchat
+    traefik.frontend.rule: 'Host: your.domain.tld'
+  creationTimestamp: null
+  labels:
+    io.kompose.service: rocketchat
+  name: rocketchat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: rocketchat
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.26.0 (40646f47)
+        traefik.backend: rocketchat
+        traefik.frontend.rule: 'Host: your.domain.tld'
+      creationTimestamp: null
+      labels:
+        io.kompose.service: rocketchat
+    spec:
+      containers:
+        - args:
+            - bash
+            - -c
+            - |-
+              for i in `seq 1 30`; do
+                  node main.js &&
+                  s=$? && break || s=$?;
+                  echo "Tried $i times. Waiting 5 secs...";
+                  sleep 5;
+                done; (exit $s)
+          env:
+            - name: MONGO_OPLOG_URL
+              value: mongodb://10.104.237.227:27017/local
+            - name: MONGO_URL
+              value: mongodb://10.104.237.227:27017/rocketchat
+            - name: PORT
+              value: "3000"
+            - name: REG_TOKEN
+              value: ${REG_TOKEN}
+            - name: ROOT_URL
+              value: http://localhost:3000
+          image: registry.rocket.chat/rocketchat/rocket.chat:latest
+          name: rocketchat
+          ports:
+            - containerPort: 3000
+          resources: {}
+          #   volumeMounts:
+          # - mountPath: /app/uploads
+          #   name: rocketchat-claim0
+      restartPolicy: Always
+      #  volumes:
+              #  - name: rocketchat-claim0
+          # persistentVolumeClaim:
+                  #  claimName: rocketchat-claim0
+status: {}
